@@ -9,20 +9,13 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import org.apache.logging.log4j.ThreadContext;
-import org.springframework.web.client.RestTemplate;
 
 
 public class PortfolioManagerApplication {
@@ -45,8 +38,36 @@ public class PortfolioManagerApplication {
   //  2. You can use "./gradlew build" to check if your code builds successfully.
 
   public static List<String> mainReadFile(String[] args) throws IOException, URISyntaxException {
+  
+      // create object mapper instance
+      ObjectMapper mapper = getObjectMapper();
+      String filename = args[0];
+      File file = resolveFileFromResources(filename);
+  
+      // List<PortfolioTrade> trades = Arrays.asList(mapper.readValue(file, PortfolioTrade[].class));
+      PortfolioTrade[] trades=mapper.readValue(file, PortfolioTrade[].class);
 
-     return Collections.emptyList();
+      for(PortfolioTrade obj: trades){
+        System.out.println(obj.toString());
+      }
+
+      List<String> listSymbols= new ArrayList<String>(); 
+    
+      for(PortfolioTrade obj: trades){
+        listSymbols.add(obj.getSymbol());
+      }
+
+      return listSymbols;
+
+  
+    //   trades.forEach(System.out::println);
+    //   List<String> listSymbols = new ArrayList<String>();
+    //   for (int i = 0; i < trades.size(); i++)
+    //   {
+    //     listSymbols.add(trades.get(i).getSymbol());
+    //   }return listSymbols;
+   
+    //  return .emptyList();
   }
 
 

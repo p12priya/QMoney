@@ -2,6 +2,7 @@
 package com.crio.warmup.stock.dto;
 
 import java.time.LocalDate;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class PortfolioTrade {
 
@@ -57,5 +58,11 @@ public class PortfolioTrade {
     return tradeType;
   }
   //solution
+
+  @Override
+  public String toString() {
+    return "PortfolioTrade [purchaseDate=" + purchaseDate + ", quantity=" + quantity + ", symbol="
+        + symbol + ", tradeType=" + tradeType + "]";
+  }
 
 }
