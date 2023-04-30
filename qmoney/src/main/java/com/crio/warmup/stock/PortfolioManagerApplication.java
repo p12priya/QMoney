@@ -14,6 +14,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 import java.util.UUID;
 import java.util.logging.Logger;
 import org.apache.logging.log4j.ThreadContext;
@@ -23,6 +25,9 @@ import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.UUID;
 import java.util.logging.Logger;
@@ -30,7 +35,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.logging.log4j.ThreadContext;
 import org.springframework.web.client.RestTemplate;
-
 
 public class PortfolioManagerApplication {
 
@@ -157,7 +161,33 @@ public class PortfolioManagerApplication {
   // Note:
   // Remember to confirm that you are getting same results for annualized returns as in Module 3.
   public static List<String> mainReadQuotes(String[] args) throws IOException, URISyntaxException {
-     return Collections.emptyList();
+    List<PortfolioTrade> listTrades = readTradesFromJson(args[0]);
+    List<String> result = new ArrayList<String>();
+    Map<String, Double> mapCandle = new HashMap<String, Double>();
+
+    String token = "cdbaaca3b1b99df3a608793cdf25658f96531eb8";
+    for(int i = 0; i < listTrades.size(); i++)
+    {
+      PortfolioTrade trade = listTrades.get(i);
+      LocalDate endDate = LocalDate.parse(args[1]);
+
+      String url = prepareUrl(trade, endDate, token);
+      //System.out.println(url);
+      RestTemplate restTemplateObj = new RestTemplate();
+      String apiResult = restTemplateObj.getForObject(url, String.class);
+      ObjectMapper mapper = getObjectMapper();
+
+      TiingoCandle [] candlesArr = mapper.readValue(apiResult, TiingoCandle[].class);
+
+      TiingoCandle lastCandle = candlesArr[candlesArr.length-1];
+      mapCandle.put(trade.getSymbol(),lastCandle.getClose());
+     // System.out.println(apiResult);
+    }
+    Map<String, Double> sortedByPrice = mapCandle.entrySet() .stream() .sorted(Map.Entry.<String, Double>comparingByValue()) .collect(Collectors.toMap(Map.Entry::getKey,Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
+    for (String key : sortedByPrice.keySet()) {
+    result.add(key);
+    }
+           return result;
   }
 
   // TODO:
@@ -181,7 +211,9 @@ public class PortfolioManagerApplication {
   // TODO:
   //  Build the Url using given parameters and use this function in your code to cann the API.
   public static String prepareUrl(PortfolioTrade trade, LocalDate endDate, String token) {
-     return "";
+    String url = "https://api.tiingo.com/tiingo/daily/"+trade.getSymbol()+"/prices?token="+token+"&startDate="+trade.getPurchaseDate()+"&endDate="+endDate; 
+
+     return url;
   }
 
 
