@@ -280,7 +280,10 @@ public class PortfolioManagerApplication {
       
           listResult.add(ret);
         }
-return listResult;
+        //You should sort the listResult based on the annualizedReturn
+        return listResult.stream()
+        .sorted((a1, a2) -> Double.compare(a2.getAnnualizedReturn(), a1.getAnnualizedReturn())) //descending order
+        .collect(Collectors.toList());
      
   }
 
