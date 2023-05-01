@@ -178,7 +178,7 @@ public class PortfolioManagerApplication {
     List<String> result = new ArrayList<String>();
     Map<String, Double> mapCandle = new HashMap<String, Double>();
 
-    String token = "cdbaaca3b1b99df3a608793cdf25658f96531eb8";
+    String token = getToken();
     for(int i = 0; i < listTrades.size(); i++)
     {
       PortfolioTrade trade = listTrades.get(i);
