@@ -242,8 +242,6 @@ public class PortfolioManagerApplication {
      return url;
   }
 
-
-
   // TODO:
   //  Ensure all tests are passing using below command
   //  ./gradlew test --tests ModuleThreeRefactorTest
