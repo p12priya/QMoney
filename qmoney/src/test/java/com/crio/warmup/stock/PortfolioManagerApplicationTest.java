@@ -26,13 +26,11 @@ class PortfolioManagerApplicationTest {
     List<String> expected = Arrays.asList(new String[]{"AAPL", "MSFT", "GOOGL"});
 
     //when
-    try{
     List<String> results = PortfolioManagerApplication
-        .mainReadFile(new String[]{filename});  
-          Assertions.assertEquals(expected, results);
+        .mainReadFile(new String[]{filename});
 
-    }catch(Exception e){e.printStackTrace();}
     //then
+    Assertions.assertEquals(expected, results);
   }
 
 
