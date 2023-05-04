@@ -48,6 +48,8 @@ import org.apache.logging.log4j.ThreadContext;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
+
+
 public class PortfolioManagerApplication {
 
 
@@ -355,6 +357,24 @@ public class PortfolioManagerApplication {
   private static String readFileAsString(String file) {
     return null;
   }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   public static void main(String[] args) throws Exception {
     Thread.setDefaultUncaughtExceptionHandler(new UncaughtExceptionHandler());
