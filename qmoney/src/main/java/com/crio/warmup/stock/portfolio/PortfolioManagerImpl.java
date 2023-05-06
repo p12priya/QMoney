@@ -8,6 +8,8 @@ import com.crio.warmup.stock.dto.AnnualizedReturn;
 import com.crio.warmup.stock.dto.Candle;
 import com.crio.warmup.stock.dto.PortfolioTrade;
 import com.crio.warmup.stock.dto.TiingoCandle;
+import com.crio.warmup.stock.quotes.StockQuoteServiceFactory;
+import com.crio.warmup.stock.quotes.StockQuotesService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -28,8 +30,13 @@ import org.springframework.web.client.RestTemplate;
 public class PortfolioManagerImpl implements PortfolioManager {
 
   private RestTemplate restTemplate;
+  StockQuotesService stockQuotesService;
   // Caution: Do not delete or modify the constructor, or else your build will break!
   // This is absolutely necessary for backward compatibility
+  protected PortfolioManagerImpl(StockQuotesService stockQuotesService) {
+    this.stockQuotesService = stockQuotesService;
+  }
+
   protected PortfolioManagerImpl(RestTemplate restTemplate) {
     this.restTemplate = restTemplate;
   }
@@ -98,6 +105,10 @@ public class PortfolioManagerImpl implements PortfolioManager {
     return Comparator.comparing(AnnualizedReturn::getAnnualizedReturn).reversed();
   }
 
+  private Comparator<Candle> getComparator2() {
+    return Comparator.comparing(Candle::getOpen).reversed();
+  }
+
   //CHECKSTYLE:OFF
 
   // TODO: CRIO_TASK_MODULE_REFACTOR
@@ -107,15 +118,16 @@ public class PortfolioManagerImpl implements PortfolioManager {
 
   public List<Candle> getStockQuote(String symbol, LocalDate from, LocalDate to)
       throws JsonProcessingException {
-        List<Candle> listCandle = new ArrayList<Candle>();
-        String url = buildUri(symbol, from, to);
-        //System.out.println(url);
-        String apiResult = restTemplate.getForObject(url, String.class);
-        ObjectMapper mapper = getObjectMapper();
-        TiingoCandle [] candlesArr = mapper.readValue(apiResult, TiingoCandle[].class);
-        for (TiingoCandle tiingoCandle : candlesArr) {
-          listCandle.add(tiingoCandle);
-        }
+        List<Candle> listCandle = new ArrayList<>();
+        listCandle = this.stockQuotesService.getStockQuote(symbol, from, to);
+        // String url = buildUri(symbol, from, to);
+        // //System.out.println(url);
+        // String apiResult = restTemplate.getForObject(url, String.class);
+        // ObjectMapper mapper = getObjectMapper();
+        // TiingoCandle [] candlesArr = mapper.readValue(apiResult, TiingoCandle[].class);
+        // for (TiingoCandle tiingoCandle : candlesArr) {
+        //   listCandle.add(tiingoCandle);
+        // }
      return listCandle;
   }
 
@@ -130,4 +142,12 @@ public class PortfolioManagerImpl implements PortfolioManager {
             + "startDate="+startDate+"&endDate="+endDate+"&token="+apiKey;
             return uriTemplate;
   }
+
+
+  // ¶TODO: CRIO_TASK_MODULE_ADDITIONAL_REFACTOR
+  //  Modify the function #getStockQuote and start delegating to calls to
+  //  stockQuoteService provided via newly added constructor of the class.
+  //  You also have a liberty to completely get rid of that function itself, however, make sure
+  //  that you do not delete the #getStockQuote function.
+
 }
