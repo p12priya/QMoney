@@ -23,7 +23,11 @@ public enum StockQuoteServiceFactory {
   //  Run the tests using command below and make sure it passes
   //  ./gradlew test --tests StockQuoteServiceFactory
 
-  public StockQuotesService getService(String provider,  RestTemplate restTemplate) {
+  public StockQuotesService getService(String provider,  RestTemplate restTemplate) throws NullPointerException{
+    if (provider == null)
+    {
+      return new AlphavantageService(restTemplate);
+    }
     switch(provider)
     {
       case "tiingo":
@@ -31,7 +35,7 @@ public enum StockQuoteServiceFactory {
       case "Tiingo":
       return new TiingoService(restTemplate);
       default:
-      return new AlphavantageService();
+      return new AlphavantageService(restTemplate);
     }
   }
 }

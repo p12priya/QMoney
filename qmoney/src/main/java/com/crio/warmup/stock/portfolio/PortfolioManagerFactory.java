@@ -33,10 +33,18 @@ public class PortfolioManagerFactory {
 }
 
    public static PortfolioManager getPortfolioManager(String provider,
-     RestTemplate restTemplate) {
+     RestTemplate restTemplate){
+      // if (provider == null || restTemplate == null) 
+      // {
+      //   return null;
+      // }
+      try{
       StockQuotesService stockQuoteService = StockQuoteServiceFactory.INSTANCE.getService(provider, restTemplate);
-     PortfolioManager portfolioManager = new PortfolioManagerImpl(stockQuoteService);
-     return portfolioManager;
+      PortfolioManager portfolioManager = new PortfolioManagerImpl(stockQuoteService);
+      return portfolioManager;
+
+      }catch(NullPointerException e){e.printStackTrace();}
+      return null;
    }
 
 }

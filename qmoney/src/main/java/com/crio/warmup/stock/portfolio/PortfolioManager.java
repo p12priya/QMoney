@@ -13,7 +13,7 @@ public interface PortfolioManager {
 
 
   List<AnnualizedReturn> calculateAnnualizedReturn(List<PortfolioTrade> portfolioTrades,
-      LocalDate endDate)
+      LocalDate endDate) throws Exception
   ;
 }
 

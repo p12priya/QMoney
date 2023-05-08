@@ -10,6 +10,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 public class TiingoService implements StockQuotesService {
@@ -42,12 +43,16 @@ public class TiingoService implements StockQuotesService {
       List<Candle> listCandle = new ArrayList<Candle>();
       String url = buildUri(symbol, from, to);
       //System.out.println(url);
+      try{
       String apiResult = restTemplate.getForObject(url, String.class);
       ObjectMapper mapper = getObjectMapper();
+      try{
       TiingoCandle [] candlesArr = mapper.readValue(apiResult, TiingoCandle[].class);
       for (TiingoCandle tiingoCandle : candlesArr) {
         listCandle.add(tiingoCandle);
       }
+    }catch(JsonProcessingException f){}
+    }catch(RestClientException e){}
    return listCandle;
 }
   

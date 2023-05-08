@@ -60,12 +60,17 @@ public class PortfolioManagerImpl implements PortfolioManager {
   //CHECKSTYLE:OFF
 
   static Double getOpeningPriceOnStartDate(List<Candle> candles) {
+    if (candles.size() > 0){
     return candles.get(0).getOpen();
+    }
+    return 0.0;
  }
 
 
  public static Double getClosingPriceOnEndDate(List<Candle> candles) {
+  if (candles.size() > 0)
     return candles.get(candles.size()-1).getClose();
+    return 0.0;
  }
 
  public static AnnualizedReturn calculateAnnualizedReturns(LocalDate endDate,
@@ -81,7 +86,7 @@ public class PortfolioManagerImpl implements PortfolioManager {
  }
 
   public List<AnnualizedReturn> calculateAnnualizedReturn(List<PortfolioTrade> portfolioTrades,
-  LocalDate endDate) {
+  LocalDate endDate) throws Exception {
     List<AnnualizedReturn> listResult = new ArrayList<AnnualizedReturn>();
     for(int i = 0; i < portfolioTrades.size(); i++)
     {
@@ -93,7 +98,7 @@ public class PortfolioManagerImpl implements PortfolioManager {
       AnnualizedReturn ret =  calculateAnnualizedReturns(endDate, trade, buyPrice, sellPrice);
      
       listResult.add(ret);
-    }catch(JsonProcessingException e){e.printStackTrace();}
+    }catch(JsonProcessingException e){e.printStackTrace(); throw new StockQuoteServiceException();}
     }
     //You should sort the listResult based on the annualizedReturn
     return listResult.stream()

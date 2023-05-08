@@ -8,6 +8,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.crio.warmup.stock.portfolio.PortfolioManager;
 import com.crio.warmup.stock.portfolio.PortfolioManagerFactory;
+import com.crio.warmup.stock.portfolio.StockQuoteServiceException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import java.io.File;
@@ -350,7 +351,11 @@ public class PortfolioManagerApplication {
        PortfolioTrade[] portfolioTrades =  objectMapper.readValue(contents, PortfolioTrade[].class);
        RestTemplate restTemplate = new RestTemplate();
        PortfolioManager portfolioManager = PortfolioManagerFactory.getPortfolioManager(restTemplate);
-      return portfolioManager.calculateAnnualizedReturn(Arrays.asList(portfolioTrades), endDate);
+       List<AnnualizedReturn> lAnnualizedReturns = new ArrayList<>();
+       try{
+      lAnnualizedReturns =  portfolioManager.calculateAnnualizedReturn(Arrays.asList(portfolioTrades), endDate);
+       }catch(StockQuoteServiceException e){};
+      return lAnnualizedReturns;
   }
 
 
