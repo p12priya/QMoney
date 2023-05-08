@@ -9,6 +9,7 @@ import com.crio.warmup.stock.dto.Candle;
 import com.crio.warmup.stock.dto.PortfolioTrade;
 import com.crio.warmup.stock.dto.TiingoCandle;
 import com.crio.warmup.stock.quotes.StockQuoteServiceFactory;
+import com.crio.warmup.stock.exception.StockQuoteServiceException;
 import com.crio.warmup.stock.quotes.StockQuotesService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -37,6 +38,11 @@ public class PortfolioManagerImpl implements PortfolioManager {
     this.stockQuotesService = stockQuotesService;
   }
 
+
+
+
+  // Caution: Do not delete or modify the constructor, or else your build will break!
+  // This is absolutely necessary for backward compatibility
   protected PortfolioManagerImpl(RestTemplate restTemplate) {
     this.restTemplate = restTemplate;
   }
@@ -86,7 +92,7 @@ public class PortfolioManagerImpl implements PortfolioManager {
  }
 
   public List<AnnualizedReturn> calculateAnnualizedReturn(List<PortfolioTrade> portfolioTrades,
-  LocalDate endDate) throws Exception {
+  LocalDate endDate) throws StockQuoteServiceException {
     List<AnnualizedReturn> listResult = new ArrayList<AnnualizedReturn>();
     for(int i = 0; i < portfolioTrades.size(); i++)
     {
@@ -98,8 +104,11 @@ public class PortfolioManagerImpl implements PortfolioManager {
       AnnualizedReturn ret =  calculateAnnualizedReturns(endDate, trade, buyPrice, sellPrice);
      
       listResult.add(ret);
-    }catch(JsonProcessingException e){e.printStackTrace(); throw new StockQuoteServiceException();}
+    }catch(JsonProcessingException  e){e.printStackTrace(); throw new StockQuoteServiceException();}
     }
+   
+
+
     //You should sort the listResult based on the annualizedReturn
     return listResult.stream()
     .sorted(getComparator()) //descending order
@@ -124,7 +133,9 @@ public class PortfolioManagerImpl implements PortfolioManager {
   public List<Candle> getStockQuote(String symbol, LocalDate from, LocalDate to)
       throws JsonProcessingException {
         List<Candle> listCandle = new ArrayList<>();
+        try{
         listCandle = this.stockQuotesService.getStockQuote(symbol, from, to);
+        }catch(JsonProcessingException|StockQuoteServiceException e){}
         // String url = buildUri(symbol, from, to);
         // //System.out.println(url);
         // String apiResult = restTemplate.getForObject(url, String.class);
@@ -154,5 +165,10 @@ public class PortfolioManagerImpl implements PortfolioManager {
   //  stockQuoteService provided via newly added constructor of the class.
   //  You also have a liberty to completely get rid of that function itself, however, make sure
   //  that you do not delete the #getStockQuote function.
+
+
+
+
+
 
 }

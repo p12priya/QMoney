@@ -3,12 +3,15 @@ package com.crio.warmup.stock;
 
 
 import com.crio.warmup.stock.dto.*;
+import com.crio.warmup.stock.exception.StockQuoteServiceException;
+import com.crio.warmup.stock.*;
 import com.crio.warmup.stock.log.UncaughtExceptionHandler;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.crio.warmup.stock.portfolio.PortfolioManager;
 import com.crio.warmup.stock.portfolio.PortfolioManagerFactory;
-import com.crio.warmup.stock.portfolio.StockQuoteServiceException;
+import com.crio.warmup.stock.portfolio.PortfolioManager;
+import com.crio.warmup.stock.portfolio.PortfolioManagerFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import java.io.File;
@@ -25,30 +28,23 @@ import java.util.UUID;
 import java.util.logging.Logger;
 import org.apache.logging.log4j.ThreadContext;
 import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.Period;
 import java.time.temporal.ChronoUnit;
-import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
-import java.util.UUID;
-import java.util.logging.Logger;
+
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.logging.log4j.ThreadContext;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
+
+
+import org.springframework.web.client.RestTemplate;
 
 
 public class PortfolioManagerApplication {
@@ -249,12 +245,16 @@ public class PortfolioManagerApplication {
   //  Ensure all tests are passing using below command
   //  ./gradlew test --tests ModuleThreeRefactorTest
   static Double getOpeningPriceOnStartDate(List<Candle> candles) {
+    if (candles.size() > 0)
      return candles.get(0).getOpen();
+     return 0.0;
   }
 
 
   public static Double getClosingPriceOnEndDate(List<Candle> candles) {
+    if (candles.size() > 0)
      return candles.get(candles.size()-1).getClose();
+     return 0.0;
   }
 
 
@@ -343,18 +343,20 @@ public class PortfolioManagerApplication {
   // Remember to confirm that you are getting same results for annualized returns as in Module 3.
 
   public static List<AnnualizedReturn> mainCalculateReturnsAfterRefactor(String[] args)
-      throws Exception {
+      throws StockQuoteServiceException {
+      List<AnnualizedReturn> lAnnualizedReturns = new ArrayList<>();
        String file = args[0];
        LocalDate endDate = LocalDate.parse(args[1]);
        String contents = readFileAsString(file);
        ObjectMapper objectMapper = getObjectMapper();
+       try{
        PortfolioTrade[] portfolioTrades =  objectMapper.readValue(contents, PortfolioTrade[].class);
        RestTemplate restTemplate = new RestTemplate();
        PortfolioManager portfolioManager = PortfolioManagerFactory.getPortfolioManager(restTemplate);
-       List<AnnualizedReturn> lAnnualizedReturns = new ArrayList<>();
        try{
       lAnnualizedReturns =  portfolioManager.calculateAnnualizedReturn(Arrays.asList(portfolioTrades), endDate);
        }catch(StockQuoteServiceException e){};
+      }catch(JsonProcessingException e){}
       return lAnnualizedReturns;
   }
 
@@ -362,6 +364,24 @@ public class PortfolioManagerApplication {
   private static String readFileAsString(String file) {
     return null;
   }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   public static void main(String[] args) throws Exception {
     Thread.setDefaultUncaughtExceptionHandler(new UncaughtExceptionHandler());

@@ -3,6 +3,7 @@ package com.crio.warmup.stock.quotes;
 
 import com.crio.warmup.stock.dto.Candle;
 import com.crio.warmup.stock.dto.TiingoCandle;
+import com.crio.warmup.stock.exception.StockQuoteServiceException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -39,20 +40,32 @@ public class TiingoService implements StockQuotesService {
     return objectMapper;
   }
 
-  public List<Candle> getStockQuote(String symbol, LocalDate from, LocalDate to)throws JsonProcessingException {
+  public List<Candle> getStockQuote(String symbol, LocalDate from, LocalDate to)throws JsonProcessingException, StockQuoteServiceException {
       List<Candle> listCandle = new ArrayList<Candle>();
       String url = buildUri(symbol, from, to);
       //System.out.println(url);
       try{
       String apiResult = restTemplate.getForObject(url, String.class);
+      if (apiResult.isEmpty())
+      {
+        throw new StockQuoteServiceException("Response is empty");
+      }
       ObjectMapper mapper = getObjectMapper();
+      if (mapper == null)
+      {
+        throw new RuntimeException("objectmapper is null");
+      }
       try{
       TiingoCandle [] candlesArr = mapper.readValue(apiResult, TiingoCandle[].class);
+      if (candlesArr == null)
+      {
+        throw new RuntimeException("data array is empty");
+      }
       for (TiingoCandle tiingoCandle : candlesArr) {
         listCandle.add(tiingoCandle);
       }
-    }catch(JsonProcessingException f){}
-    }catch(RestClientException e){}
+    }catch(JsonProcessingException f){throw new StockQuoteServiceException(" response from a third-party service contains an error");}
+    }catch(RestClientException e){throw new StockQuoteServiceException("Unable to process req from AlphaVantage");}
    return listCandle;
 }
   

@@ -6,6 +6,7 @@ import static java.time.temporal.ChronoUnit.SECONDS;
 import com.crio.warmup.stock.dto.AlphavantageCandle;
 import com.crio.warmup.stock.dto.AlphavantageDailyResponse;
 import com.crio.warmup.stock.dto.Candle;
+import com.crio.warmup.stock.exception.StockQuoteServiceException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -80,19 +81,37 @@ private Comparator<Candle> getComparator() {
   }
 
 
-  public List<Candle> getStockQuote(String symbol, LocalDate from, LocalDate to)throws JsonProcessingException {
+  public List<Candle> getStockQuote(String symbol, LocalDate from, LocalDate to)throws JsonProcessingException, StockQuoteServiceException {
     List<Candle> listCandle = new ArrayList<>();
     String url = buildUri(symbol);
     // System.out.println(url);
     try{
     String apiResult = restTemplate.getForObject(url, String.class);
+    if (apiResult.isEmpty())
+    {
+      throw new StockQuoteServiceException("Response is empty");
+    }
     System.out.println(apiResult);
+    String aaplQuotes = "{\"Information\": \"The **demo** API key is for demo purposes only. "
+      + "Please claim your free API key at (https://www.alphavantage.co/support/#api-key) to "
+      + "explore our full API offerings. It takes fewer than 20 seconds, and we are committed to "
+      + "making it free forever.\"}";
+    if (apiResult.equals(aaplQuotes))
+    {
+      System.out.println("Returning from here");
+      return listCandle;
+    }
 
     ObjectMapper mapper = getObjectMapper();
+    if (mapper == null)
+    {
+      throw new RuntimeException("ObjectMapper is empty");
+    }
     try{
     AlphavantageDailyResponse alphavantageDailyResponse = mapper.readValue(apiResult, AlphavantageDailyResponse.class);
 
     Map<LocalDate, AlphavantageCandle> timeSeries = alphavantageDailyResponse.getCandles();
+   
     if (timeSeries != null){
     for (Map.Entry<LocalDate, AlphavantageCandle> entry : timeSeries.entrySet()) {
         LocalDate date = entry.getKey();
@@ -107,9 +126,9 @@ private Comparator<Candle> getComparator() {
     .sorted(getComparator()) //descending order
     .collect(Collectors.toList());
   }
-  }catch(JsonProcessingException e){}
-  }catch(RestClientException e){}
-  return listCandle;
+  }catch(JsonProcessingException  e){throw new StockQuoteServiceException(" response from a third-party service contains an error");}
+  }catch(RestClientException e){throw new StockQuoteServiceException("Unable to process req from AlphaVantage");}
+    return listCandle;
 
 }
 }
